@@ -50,6 +50,23 @@ client.on('message', function (message) {
     let mentionString = '<@!' + pierreId + '>'
     message.channel.send(`${mentionString} est un ${randomSlur} !`)
   }
+
+  if (message.content.startsWith(`${prefix}sondage`)) {
+    const quotedArgs = commandBody.match(/\w+|"[^"]+"/g)
+    quotedArgs.shift()
+
+    const pollEmbed = new Discord.MessageEmbed()
+      .setColor('#0099ff')
+      .setTitle('Sondage')
+      .setAuthor(message.author.username)
+      .addFields({
+        name: quotedArgs[0],
+        value: `${quotedArgs[1]}\n${quotedArgs[2]}`,
+      })
+      .setTimestamp()
+
+    message.channel.send(pollEmbed)
+  }
 })
 
 client.login(config.BOT_TOKEN)
