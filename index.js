@@ -1,4 +1,5 @@
 const Discord = require('discord.js')
+const { rollotron } = require('./rollotron')
 const config = require('./config.json')
 const client = new Discord.Client()
 
@@ -17,13 +18,7 @@ client.on('message', function (message) {
   }
 
   if (message.content.startsWith(`${prefix}roll`)) {
-    message.channel.send(
-      `${message.author.username} rolls ${Math.floor(
-        1 +
-          Math.random() *
-            (args.length ? (parseInt(args[0]) ? parseInt(args[0]) - 1 : 5) : 5)
-      )}`
-    )
+    rollotron(message, args)
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']
