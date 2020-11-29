@@ -1,5 +1,5 @@
+const Discord = require('discord.js')
 const Sequelize = require('sequelize')
-const WATCH_DURATION = 10000
 
 exports.PollDatabase = class PollDatabase {
   constructor() {
@@ -20,7 +20,15 @@ exports.PollDatabase = class PollDatabase {
     )
 
     this.polls = this.sequelize.define('polls', {
+      messageId: {
+        type: Sequelize.INTEGER,
+        unique: true,
+      },
       user: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      userName: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -28,44 +36,39 @@ exports.PollDatabase = class PollDatabase {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      answer1: {
+      answers: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      answer2: {
+      votes: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      answer3: Sequelize.STRING,
-      answer4: Sequelize.STRING,
-      answer5: Sequelize.STRING,
-      answer6: Sequelize.STRING,
     })
-    console.log('connect')
   }
 
   sync = () => {
     this.polls.sync()
-    console.log('sync')
   }
 
-  create = async (user, question, answers) => {
+  create = async (message, question, answers) => {
+    const {
+      author: { id: authorId, username: authorName },
+    } = message
     try {
       const poll = await this.polls.create({
-        user: user,
+        user: authorId,
+        userName: authorName,
         question: question,
-        answer1: answers[0],
-        answer2: answers[1],
-        answer3: answers[2] ? answers[2] : null,
-        answer4: answers[3] ? answers[3] : null,
-        answer5: answers[4] ? answers[4] : null,
-        answer6: answers[5] ? answers[5] : null,
-        vote1: JSON.stringify([]),
-        vote2: JSON.stringify([]),
-        vote3: JSON.stringify([]),
-        vote4: JSON.stringify([]),
-        vote5: JSON.stringify([]),
-        vote6: JSON.stringify([]),
+        answers: JSON.stringify(answers),
+        votes: JSON.stringify({
+          '🇦': [],
+          '🇧': [],
+          '🇨': [],
+          '🇩': [],
+          '🇪': [],
+          '🇫': [],
+        }),
       })
       return poll.id
     } catch (e) {
@@ -74,30 +77,66 @@ exports.PollDatabase = class PollDatabase {
     return -1
   }
 
-  watch = (message, pollId, duration) => {
-    if (duration <= 0) {
-      console.log('stop watch')
-      // TODO show poll result
+  setMessageId = async (pollId, messageId) => {
+    const poll = await this.polls.findOne({
+      where: { id: pollId },
+    })
+    poll.messageId = messageId
+    await poll.save()
+  }
+
+  update = async (reaction, user, action) => {
+    const emojis = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫']
+    const {
+      message: {
+        id: messageId,
+        author: { id: authorId },
+      },
+      emoji: { name: emojiName },
+    } = reaction
+    if (!emojis.includes(emojiName)) {
       return
     }
-    console.log('watch')
-    const filter = (reaction, user) => {
-      return (
-        ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].includes(reaction.emoji.name) &&
-        user.id !== message.author.id
-      )
+    const { id: userId } = user
+    const poll = await this.polls.findOne({
+      where: { messageId: messageId },
+    })
+    if (poll && userId !== authorId) {
+      this.toggleReaction(poll, emojiName, userId, action)
+      const votes = JSON.parse(poll.votes)
+      const answers = JSON.parse(poll.answers)
+        .map((answer) => {
+          const vote = answer.split(' ')[0]
+          if (votes[vote].length) {
+            return `${answer} (${votes[vote]
+              .map((id) => `<@!${id}>`)
+              .join(',')})`
+          } else {
+            return `${answer}`
+          }
+        })
+        .join('\n')
+      const pollEmbed = new Discord.MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle(`Sondage #${poll.id} de ${poll.userName}`)
+        .addFields({
+          name: poll.question,
+          value: answers,
+        })
+        .setTimestamp()
+
+      reaction.message.edit(pollEmbed)
     }
-    message
-      .awaitReactions(filter, { time: WATCH_DURATION })
-      .then((collected) => {
-        collected.map((reaction) =>
-          console.log(reaction.emoji.name, reaction.count)
-        )
-        this.watch(message, pollId, duration - WATCH_DURATION)
-      })
-      .catch(() => {
-        console.log('no reactions')
-        this.watch(message, pollId, duration - WATCH_DURATION)
-      })
+  }
+
+  async toggleReaction(poll, vote, userID, action) {
+    const votes = JSON.parse(poll.votes)
+    if (action === 'add') {
+      votes[vote] = [userID, ...votes[vote]]
+    } else {
+      votes[vote] = [...votes[vote].filter((id) => id !== userID)]
+    }
+    poll.votes = JSON.stringify(votes)
+    await poll.save()
   }
 }

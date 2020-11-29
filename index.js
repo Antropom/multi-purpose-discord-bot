@@ -11,6 +11,13 @@ client.once('ready', () => {
   database.sync()
 })
 
+client.on('messageReactionAdd', (reaction, user) => {
+  database.update(reaction, user, 'add')
+})
+client.on('messageReactionRemove', (reaction, user) => {
+  database.update(reaction, user, 'remove')
+})
+
 client.on('message', function (message) {
   if (message.author.bot) return
 
@@ -80,7 +87,7 @@ client.on('message', function (message) {
     )
 
     database
-      .create(message.author.id, questionTitle, answersWithEmojis)
+      .create(message, questionTitle, answersWithEmojis)
       .then((pollId) => {
         if (pollId === -1) {
           message.channel.send(
@@ -106,7 +113,7 @@ client.on('message', function (message) {
             answersWithEmojis.forEach((reaction, i) =>
               embedMessage.react(emojis[i])
             )
-            database.watch(embedMessage, pollId, 30000)
+            database.setMessageId(pollId, embedMessage.id)
           })
           .then(() => {
             message.delete()
