@@ -1,9 +1,15 @@
 const Discord = require('discord.js')
 const { rollotron } = require('./rollotron')
+const { PollDatabase } = require('./poll-database')
 const config = require('./config.json')
 const client = new Discord.Client()
 
 const prefix = '!'
+let database = new PollDatabase()
+
+client.once('ready', () => {
+  database.sync()
+})
 
 client.on('message', function (message) {
   if (message.author.bot) return
@@ -66,34 +72,45 @@ client.on('message', function (message) {
     // On enlève la commande
     quotedArgs.shift()
 
-    const questionTitle = quotedArgs.shift()
+    const questionTitle = quotedArgs.shift().replace(/['"]+/g, '')
 
     // Création de chaque réponse possible en y ajoutant des émojis
     const answersWithEmojis = quotedArgs.map(
-      (answer, i) => `${emojis[i]} ${answer}`
+      (answer, i) => `${emojis[i]} ${answer.replace(/['"]+/g, '')}`
     )
 
-    // Création de la string avec retours à la ligne pour l'embes
-    const stringAnswers = answersWithEmojis.join('\n')
+    database
+      .create(message.author.id, questionTitle, answersWithEmojis)
+      .then((pollId) => {
+        if (pollId === -1) {
+          message.channel.send(
+            'Un problème est survenu lors de la création du sondage.'
+          )
+          return
+        }
+        // Création de la string avec retours à la ligne pour l'embes
+        const stringAnswers = answersWithEmojis.join('\n')
 
-    const pollEmbed = new Discord.MessageEmbed()
-      .setColor('#0099ff')
-      .setTitle(`Sondage de ${message.author.username}`)
-      .addFields({
-        name: questionTitle.replace(/['"]+/g, ''),
-        value: `${stringAnswers.replace(/['"]+/g, '')}`,
-      })
-      .setTimestamp()
+        const pollEmbed = new Discord.MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle(`Sondage #${pollId} de ${message.author.username}`)
+          .addFields({
+            name: questionTitle,
+            value: `${stringAnswers}`,
+          })
+          .setTimestamp()
 
-    message.channel
-      .send(pollEmbed)
-      .then((embedMessage) => {
-        answersWithEmojis.forEach((reaction, i) =>
-          embedMessage.react(emojis[i])
-        )
-      })
-      .then(() => {
-        message.delete()
+        message.channel
+          .send(pollEmbed)
+          .then((embedMessage) => {
+            answersWithEmojis.forEach((reaction, i) =>
+              embedMessage.react(emojis[i])
+            )
+            database.watch(embedMessage, pollId, 30000)
+          })
+          .then(() => {
+            message.delete()
+          })
       })
   }
 })
