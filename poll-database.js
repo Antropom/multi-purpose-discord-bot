@@ -90,7 +90,9 @@ exports.PollDatabase = class PollDatabase {
     message
       .awaitReactions(filter, { time: WATCH_DURATION })
       .then((collected) => {
-        collected.map((reaction) => console.log(reaction))
+        collected.map((reaction) =>
+          console.log(reaction.emoji.name, reaction.count)
+        )
         this.watch(message, pollId, duration - WATCH_DURATION)
       })
       .catch(() => {
