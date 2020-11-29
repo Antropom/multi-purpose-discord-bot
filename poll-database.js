@@ -1,10 +1,4 @@
 const Sequelize = require('sequelize')
-const {
-  DATABASE_NAME,
-  DATABASE_HOST,
-  DATABASE_USER,
-  DATABASE_PASSWORD,
-} = require('./config.dev.json')
 const WATCH_DURATION = 10000
 
 exports.PollDatabase = class PollDatabase {
@@ -14,11 +8,11 @@ exports.PollDatabase = class PollDatabase {
 
   connect = () => {
     this.sequelize = new Sequelize(
-      DATABASE_NAME,
-      DATABASE_USER,
-      DATABASE_PASSWORD,
+      'discordbot',
+      'discordbot',
+      'beeboop@foiss!',
       {
-        host: DATABASE_HOST,
+        host: 'localhost',
         dialect: 'sqlite',
         logging: false,
         storage: 'database.sqlite',
