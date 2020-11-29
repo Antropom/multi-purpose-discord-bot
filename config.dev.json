@@ -1,3 +1,7 @@
 {
-  "BOT_TOKEN": "NzgyMjIwNjEyNzg4NjgyNzcy.X8JBtw.sGfYneX6jDK9H8ebL9LKqGFuwEU"
+  "BOT_TOKEN": "NzgyMjIwNjEyNzg4NjgyNzcy.X8JBtw.sGfYneX6jDK9H8ebL9LKqGFuwEU",
+  "DATABASE_HOST": "localhost",
+  "DATABASE_NAME": "discordbot",
+  "DATABASE_USER": "discordbot",
+  "DATABASE_PASSWORD": "beeboop@foiss!"
 }
