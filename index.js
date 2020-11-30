@@ -12,6 +12,7 @@ let database = new PollDatabase()
 
 client.once('ready', () => {
   database.sync()
+  client.user.setActivity('PM !help pour la doc')
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
