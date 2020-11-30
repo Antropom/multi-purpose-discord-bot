@@ -27,11 +27,6 @@ client.on('message', function (message) {
   const args = commandBody.split(' ')
   const command = args.shift().toLowerCase()
 
-  if (message.content === `${prefix}ping`) {
-    const timeTaken = Date.now() - message.createdTimestamp
-    message.reply(`Pong! This message had a latency of ${timeTaken}ms.`)
-  }
-
   if (message.content.startsWith(`${prefix}roll`)) {
     rollotron(message, args)
   }
