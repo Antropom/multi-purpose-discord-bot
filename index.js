@@ -40,7 +40,7 @@ client.on('message', function (message) {
   }
 
   if (message.content.startsWith(`${prefix}roll`)) {
-    rollotron(message, args, rollotronDatabase)
+    rollotron(message, args, rollotronDatabase, Discord)
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']
