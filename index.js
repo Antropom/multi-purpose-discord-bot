@@ -2,22 +2,25 @@ const Discord = require('discord.js')
 const { rollotron } = require('./functions/rollotron')
 const { poll } = require('./functions/poll')
 const { PollDatabase } = require('./functions/poll-database')
+const { RollotronDatabase } = require('./functions/rollotron-database')
 const { foissSlurs } = require('./functions/foissSlurs')
 const config = require('./config.json')
 const client = new Discord.Client()
 
 const prefix = '!'
-let database = new PollDatabase()
+let pollDatabase = new PollDatabase()
+let rollotronDatabase = new RollotronDatabase()
 
 client.once('ready', () => {
-  database.sync()
+  pollDatabase.sync()
+  rollotronDatabase.sync()
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
-  database.update(reaction, user, 'add')
+  pollDatabase.update(reaction, user, 'add')
 })
 client.on('messageReactionRemove', (reaction, user) => {
-  database.update(reaction, user, 'remove')
+  pollDatabase.update(reaction, user, 'remove')
 })
 
 client.on('message', function (message) {
@@ -28,7 +31,7 @@ client.on('message', function (message) {
   const command = args.shift().toLowerCase()
 
   if (message.content.startsWith(`${prefix}roll`)) {
-    rollotron(message, args)
+    rollotron(message, args, rollotronDatabase)
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']
@@ -37,7 +40,7 @@ client.on('message', function (message) {
   }
 
   if (message.content.startsWith(`${prefix}sondage`)) {
-    poll(message, commandBody, database, Discord)
+    poll(message, commandBody, pollDatabase, Discord)
   }
 })
 
