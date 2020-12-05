@@ -1,11 +1,11 @@
-exports.rollotron = async (message, args, database) => {
+exports.rollotron = async (message, args, database, Discord) => {
   const {
     channel,
     author: { id: authorId, username },
   } = message
 
-  const reserved = ['i', 'indiv', 'l', 'list']
-  // macro
+  const reserved = ['i', 'indiv', 'l', 'list', 'h', 'help']
+
   let macro = args[0]
   if (
     !reserved.includes(macro) &&
@@ -60,6 +60,14 @@ exports.rollotron = async (message, args, database) => {
     } else {
       channel.send(`${username} has no macro`)
     }
+    return
+  } else if (args[0] === 'h' || args[0] === 'help') {
+    const doc = new Discord.MessageEmbed().setColor('#0099ff').addFields({
+      name: 'Les dés',
+      value:
+        'Afin de lancer un dé, utiliser la commande `!roll`.\n Pour lancer plusieurs dés, rajouter le paramètre `xdy`, où x et y sont des nombres. Exemple: `!roll 2d20` pour lancer 2 D20. Le paramètre `xdy` peut être répété plusieurs fois afin de lancer des dés de valeurs différentes. \n Pour ajouter un **modificateur**, renseigner `$x` après le jet, où $ est `+`, `-` ou `*` et x est un nombre. Exemple: `!roll 2d8+2` pour lancer 2 D8 et y ajouter 2. \n Pour **répéter** un lancé de dès, ajouter `rx` après le jet, où x est un nombre. Exemple: `!roll i 3d6r4` pour lancer 4 fois 3 D6. \n Pour faire des jets de dès **individuels**, utiliser la commande `i`. Exemple: `!roll i 2d6 1d8` pour les scores de 2 D6 et 1 D8 indépendamment. \n Pour enregistrer ou modifier une **macro**, ajouter le nom de la macro avant le jet de dés. Exemple: `!roll bsword 2D12+4`. \n Pour exécuter une macro, il suffit de la nommer. Exemple: `!roll bsword` \n Pour supprimer une macro, il faut préfixer son nom par un `!`. Exemple: `!roll !bsword`.',
+    })
+    message.author.send(doc)
     return
   }
 
