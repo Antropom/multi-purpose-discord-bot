@@ -1,4 +1,5 @@
 const Discord = require('discord.js')
+const { documentation } = require('./functions/documentation')
 const { rollotron } = require('./functions/rollotron')
 const { poll } = require('./functions/poll')
 const { PollDatabase } = require('./functions/poll-database')
@@ -14,6 +15,7 @@ let rollotronDatabase = new RollotronDatabase()
 client.once('ready', () => {
   pollDatabase.sync()
   rollotronDatabase.sync()
+  client.user.setActivity('PM !help pour la doc')
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -29,6 +31,13 @@ client.on('message', function (message) {
   const commandBody = message.content.slice(prefix.length)
   const args = commandBody.split(' ')
   const command = args.shift().toLowerCase()
+
+  if (
+    message.channel.type === 'dm' &&
+    message.content.startsWith(`${prefix}help`)
+  ) {
+    documentation(message, Discord)
+  }
 
   if (message.content.startsWith(`${prefix}roll`)) {
     rollotron(message, args, rollotronDatabase)
