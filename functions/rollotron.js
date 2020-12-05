@@ -11,9 +11,11 @@ exports.rollotron = (message, args) => {
   const rolls = args
     .map((arg) => {
       let n = 1
-      if (arg.includes('d')) {
-        n = arg.split('d')[0]
+      arg = arg.toLowerCase()
+      if (arg.includes('d'))  {
+        n = arg.split('d')[0] ? arg.split('d')[0] : 1
         arg = arg.split('d')[1]
+        console.log('test');
       }
       const dices = []
       for (let i = 0; i < n; i++) {
@@ -21,11 +23,15 @@ exports.rollotron = (message, args) => {
           return `[${arg} is unknown]`
         }
         const value = parseInt(arg)
-        const roll = Math.floor(1 + Math.random() * (value - 1))
+        const roll = Math.floor(1 + Math.random() * (value))
         total += roll
-        dices.push(`[${roll}/${value}]`)
+        dices.push(roll)
       }
-      return dices.join(',')
+      if (dices.length > 1) {
+        return `(${dices.join(', ')})`
+      } else {
+        return dices[0]
+      }
     })
     .join(' + ')
 
