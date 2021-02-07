@@ -2,8 +2,10 @@ const Discord = require('discord.js')
 const { documentation } = require('./functions/documentation')
 const { rollotron } = require('./functions/rollotron')
 const { poll } = require('./functions/poll')
+const { moneytron } = require('./functions/moneytron')
 const { PollDatabase } = require('./functions/poll-database')
 const { RollotronDatabase } = require('./functions/rollotron-database')
+const { MoneytronDatabase } = require('./functions/moneytron-database')
 const { foissSlurs } = require('./functions/foissSlurs')
 const config = require('./config.json')
 const client = new Discord.Client()
@@ -11,10 +13,12 @@ const client = new Discord.Client()
 const prefix = '!'
 let pollDatabase = new PollDatabase()
 let rollotronDatabase = new RollotronDatabase()
+let moneytronDatabase = new MoneytronDatabase()
 
 client.once('ready', () => {
   pollDatabase.sync()
   rollotronDatabase.sync()
+  moneytronDatabase.sync()
   client.user.setActivity('PM !help pour la doc')
 })
 
@@ -46,6 +50,15 @@ client.on('message', function (message) {
     message.content === `${prefix}r`
   ) {
     rollotron(message, args, rollotronDatabase, Discord)
+  }
+
+  if (
+    message.content.startsWith(`${prefix}money `) ||
+    message.content.startsWith(`${prefix}m `) ||
+    message.content === `${prefix}money` ||
+    message.content === `${prefix}m`
+  ) {
+    moneytron(message, args, moneytronDatabase, Discord)
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']
