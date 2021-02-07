@@ -39,7 +39,12 @@ client.on('message', function (message) {
     documentation(message, Discord)
   }
 
-  if (message.content.startsWith(`${prefix}roll`)) {
+  if (
+    message.content.startsWith(`${prefix}roll `) ||
+    message.content.startsWith(`${prefix}r `) ||
+    message.content === `${prefix}roll` ||
+    message.content === `${prefix}r`
+  ) {
     rollotron(message, args, rollotronDatabase, Discord)
   }
 
