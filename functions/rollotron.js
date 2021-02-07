@@ -6,11 +6,12 @@ exports.rollotron = async (message, args, database, Discord) => {
 
   const reserved = ['i', 'indiv', 'l', 'list', 'h', 'help']
 
-  let macro = args[0]
+  let macro = args && args.length > 0 ? args[0] : null
   if (
+    macro &&
     !reserved.includes(macro) &&
     isNaN(macro[0]) &&
-    (macro[0] !== 'd' || !isNaN(macro[1]))
+    (macro[0] !== 'd' || (macro.length > 1 && isNaN(macro[1])))
   ) {
     if (macro[0] === '!') {
       macro = macro.substring(1)
@@ -42,7 +43,7 @@ exports.rollotron = async (message, args, database, Discord) => {
     }
   }
   let indiv = false
-  if (!args) {
+  if (!args || args.length < 1) {
     args.push('6')
   } else if (args[0] === 'i' || args[0] === 'indiv') {
     args.shift()
@@ -70,7 +71,6 @@ exports.rollotron = async (message, args, database, Discord) => {
     message.author.send(doc)
     return
   }
-
   let total = 0
   let rolls = args.map((arg) => {
     let prefix = 1
@@ -125,37 +125,42 @@ exports.rollotron = async (message, args, database, Discord) => {
         total += roll
         dices.push(roll)
       }
-      if (dices.length > 1) {
-        if (indiv) {
-          let sum = dices.reduce((acc, v) => (acc += v))
-          let modifier = ''
-          if (modType === '+' || modType === '-' || modType === 'x') {
-            if (modType === '+') {
-              sum += modValue
-            } else if (modType === '-') {
-              sum = Math.max(0, sum - modValue)
-            } else {
-              sum *= modValue
-            }
-            modifier = `${modType}${modValue}`
+
+      if (indiv) {
+        let sum = dices.reduce((acc, v) => (acc += v))
+        let modifier = ''
+        if (modType === '+' || modType === '-' || modType === 'x') {
+          if (modType === '+') {
+            sum += modValue
+          } else if (modType === '-') {
+            sum = Math.max(0, sum - modValue)
+          } else {
+            sum *= modValue
           }
+          modifier = `${modType}${modValue}`
+        }
+        if (dices.length > 1) {
           result.push(`(${dices.join(', ')})${modifier} = ${sum}`)
         } else {
-          let modifier = ''
-          if (modType === '+' || modType === '-' || modType === 'x') {
-            if (modType === '+') {
-              total += modValue
-            } else if (modType === '-') {
-              total = Math.max(0, total - modValue)
-            } else {
-              total *= modValue
-            }
-            modifier = `${modType}${modValue}`
-          }
-          result.push(`(${dices.join(', ')})${modifier}`)
+          result.push(`${dices[0]}${modifier} = ${sum}`)
         }
       } else {
-        result.push(dices[0])
+        let modifier = ''
+        if (modType === '+' || modType === '-' || modType === 'x') {
+          if (modType === '+') {
+            total += modValue
+          } else if (modType === '-') {
+            total = Math.max(0, total - modValue)
+          } else {
+            total *= modValue
+          }
+          modifier = `${modType}${modValue}`
+        }
+        if (dices.length > 1) {
+          result.push(`(${dices.join(', ')})${modifier}`)
+        } else {
+          result.push(`${dices[0]}${modifier}`)
+        }
       }
     }
     return indiv ? result.join('\n') : result.join(', ')
@@ -163,10 +168,10 @@ exports.rollotron = async (message, args, database, Discord) => {
 
   let result = ''
   if (indiv) {
-    result = `${username} rolls:\n${rolls.join('\n')}`
+    result += `${username} rolls:\n${rolls.join('\n')}`
   } else {
     rolls = rolls.join(' + ')
-    result =
+    result +=
       rolls.includes(',') || rolls.includes('+')
         ? `${username} rolls ${rolls}\nTotal ${total}`
         : `${username} rolls ${rolls}`
