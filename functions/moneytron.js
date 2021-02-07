@@ -8,15 +8,31 @@ exports.moneytron = async (message, args, database, Discord) => {
     wallet = await database.load(authorId)
   } else if (args[0] === 'reset' || args[0] === 'r') {
     wallet = await database.reset(authorId)
+  } else if (args[0] === 'gain' || args[0] === 'g') {
+    args.shift()
+    wallet = await database.gain(authorId, args.join(' ').toLowerCase())
+  } else if (args[0] === 'pay' || args[0] === 'p') {
+    args.shift()
+    const { paid, change, update } = await database.pay(
+      authorId,
+      args.join(' ').toLowerCase()
+    )
+    channel.send(
+      `${paidContent(
+        readableWallet(paid),
+        readableWallet(change),
+        username
+      )}\n${walletContent(readableWallet(update), username)}`
+    )
+    return
   } else {
     wallet = await database.set(authorId, args.join(' ').toLowerCase())
   }
-  channel.send(walletContent(wallet, username))
+  channel.send(walletContent(readableWallet(wallet), username))
 }
 
-const walletContent = (wallet, username) => {
+const readableWallet = (wallet) => {
   let total = []
-  let result = `Le porte-monnaie de ${username} est vide.`
   if (wallet.pp > 0) {
     total.push(`${wallet.pp}:medal:`)
   }
@@ -32,8 +48,23 @@ const walletContent = (wallet, username) => {
   if (wallet.cp > 0) {
     total.push(`${wallet.cp}:third_place:`)
   }
-  if (total.length > 1) {
-    result = `Le porte-monnaie de ${username} contient:\n${total.join(', ')}`
+  return total
+}
+
+const walletContent = (currency, username) => {
+  let result = `Le porte-monnaie de ${username} est vide.`
+  if (currency.length > 0) {
+    result = `Le porte-monnaie de ${username} contient :\n${currency.join(
+      ', '
+    )}`
+  }
+  return result
+}
+
+const paidContent = (paid, change, username) => {
+  let result = `${username} a payé : ${paid.join(', ')}`
+  if (change.length) {
+    result += ` et a reçu : ${change.join(', ')}`
   }
   return result
 }
