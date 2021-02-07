@@ -87,7 +87,128 @@ exports.MoneytronDatabase = class MoneytronDatabase {
     return wallet
   }
 
-  convertWalletCP(wallet) {
+  gain = async (authorId, amount) => {
+    const wallet = await this.load(authorId)
+    const bill = this.convertAmountToBill(amount)
+    wallet.pp += bill.pp
+    wallet.gp += bill.gp
+    wallet.ep += bill.ep
+    wallet.sp += bill.sp
+    wallet.cp += bill.cp
+    await wallet.save()
+    return wallet
+  }
+
+  pay = async (authorId, amount) => {
+    const wallet = await this.load(authorId)
+    const stash = {
+      pp: wallet.pp,
+      gp: wallet.gp,
+      ep: wallet.ep,
+      sp: wallet.sp,
+      cp: wallet.cp,
+    }
+    const money = this.convertWalletToCopper(stash)
+    const total = this.convertAmountToCopper(amount)
+
+    if (total > money) {
+      throw new Error('Not enough money')
+    }
+    const bill = this.convertAmountToBill(amount)
+    const paid = {
+      pp: 0,
+      gp: 0,
+      ep: 0,
+      sp: 0,
+      cp: 0,
+    }
+    // pay what you can
+    paid.pp += Math.min(bill.pp, stash.pp)
+    stash.pp -= paid.pp
+    paid.gp += Math.min(bill.gp, stash.gp)
+    stash.gp -= paid.gp
+    paid.ep += Math.min(bill.ep, stash.ep)
+    stash.ep -= paid.ep
+    paid.sp += Math.min(bill.sp, stash.sp)
+    stash.sp -= paid.sp
+    paid.cp += Math.min(bill.cp, stash.cp)
+    stash.cp -= paid.cp
+
+    while (
+      this.convertWalletToCopper(bill) > this.convertWalletToCopper(paid)
+    ) {
+      if (stash.cp > 0) {
+        paid.cp += stash.cp
+        stash.cp = 0
+      } else if (stash.sp > 0) {
+        paid.sp += stash.sp
+        stash.sp = 0
+      } else if (stash.ep > 0) {
+        paid.ep += stash.ep
+        stash.ep = 0
+      } else if (stash.gp > 0) {
+        paid.gp += stash.gp
+        stash.gp = 0
+      } else if (stash.pp > 0) {
+        paid.pp += stash.pp
+        stash.pp = 0
+      }
+    }
+    let diff =
+      this.convertWalletToCopper(paid) - this.convertWalletToCopper(bill)
+    const change = {
+      pp: 0,
+      gp: 0,
+      ep: 0,
+      sp: 0,
+      cp: 0,
+    }
+    change.gp = Math.floor(diff / 100)
+    diff -= change.gp * 100
+    change.sp = Math.floor(diff / 10)
+    diff -= change.sp * 10
+    change.cp = diff
+
+    // remove change overflow
+    if (paid.cp > 0 && change.cp > 0) {
+      if (paid.cp > change.cp) {
+        paid.cp = paid.cp - change.cp
+        change.cp = 0
+      } else {
+        change.cp = change.cp - paid.cp
+        paid.cp = 0
+      }
+    }
+    if (paid.sp > 0 && change.sp > 0) {
+      if (paid.sp > change.sp) {
+        paid.sp = paid.sp - change.sp
+        change.sp = 0
+      } else {
+        change.sp = change.sp - paid.sp
+        paid.sp = 0
+      }
+    }
+    if (paid.gp > 0 && change.gp > 0) {
+      if (paid.gp > change.gp) {
+        paid.gp = paid.gp - change.gp
+        change.gp = 0
+      } else {
+        change.gp = change.gp - paid.gp
+        paid.gp = 0
+      }
+    }
+
+    wallet.pp = wallet.pp - paid.pp + change.pp
+    wallet.gp = wallet.gp - paid.gp + change.gp
+    wallet.ep = wallet.ep - paid.ep + change.ep
+    wallet.sp = wallet.sp - paid.sp + change.sp
+    wallet.cp = wallet.cp - paid.cp + change.cp
+
+    await wallet.save()
+    return { paid: paid, change: change, update: wallet }
+  }
+
+  convertWalletToCopper(wallet) {
     return (
       wallet.pp * 1000 +
       wallet.gp * 100 +
@@ -97,7 +218,7 @@ exports.MoneytronDatabase = class MoneytronDatabase {
     )
   }
 
-  convertAmountToCP(amount) {
+  convertAmountToCopper(amount) {
     let total = 0
     for (const type of amount.split(' ')) {
       const value = parseInt(type.replace(/\D/g, ''))
@@ -117,19 +238,25 @@ exports.MoneytronDatabase = class MoneytronDatabase {
   }
 
   convertAmountToBill(amount) {
-    let bill = [0, 0, 0, 0, 0]
+    let bill = {
+      pp: 0,
+      gp: 0,
+      ep: 0,
+      sp: 0,
+      cp: 0,
+    }
     for (const type of amount.split(' ')) {
       const value = parseInt(type.replace(/\D/g, ''))
       if (type.endsWith('pp')) {
-        bill[0] = value
+        bill.pp = value
       } else if (type.endsWith('gp') || type.endsWith('po')) {
-        bill[1] = value
+        bill.gp = value
       } else if (type.endsWith('ep') || type.endsWith('pe')) {
-        bill[2] = value
+        bill.ep = value
       } else if (type.endsWith('sp') || type.endsWith('pa')) {
-        bill[3] = value
+        bill.sp = value
       } else if (type.endsWith('cp') || type.endsWith('pc')) {
-        bill[4] = value
+        bill.cp = value
       }
     }
     return bill
