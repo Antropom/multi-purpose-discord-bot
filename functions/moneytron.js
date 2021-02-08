@@ -13,17 +13,21 @@ exports.moneytron = async (message, args, database, Discord) => {
     wallet = await database.gain(authorId, args.join(' ').toLowerCase())
   } else if (args[0] === 'pay' || args[0] === 'p') {
     args.shift()
-    const { paid, change, update } = await database.pay(
-      authorId,
-      args.join(' ').toLowerCase()
-    )
-    channel.send(
-      `${paidContent(
-        readableWallet(paid),
-        readableWallet(change),
-        username
-      )}\n${walletContent(readableWallet(update), username)}`
-    )
+    try {
+      const { paid, change, update } = await database.pay(
+        authorId,
+        args.join(' ').toLowerCase()
+      )
+      channel.send(
+        `${paidContent(
+          readableWallet(paid),
+          readableWallet(change),
+          username
+        )}\n${walletContent(readableWallet(update), username)}`
+      )
+    } catch (error) {
+      channel.send(`${username} n'a pas assez d'argent.`)
+    }
     return
   } else {
     wallet = await database.set(authorId, args.join(' ').toLowerCase())
