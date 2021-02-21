@@ -6,6 +6,7 @@ const { moneytron } = require('./functions/moneytron')
 const { PollDatabase } = require('./functions/poll-database')
 const { RollotronDatabase } = require('./functions/rollotron-database')
 const { MoneytronDatabase } = require('./functions/moneytron-database')
+const { reminder } = require('./functions/reminder')
 const { foissSlurs } = require('./functions/foissSlurs')
 const config = require('./config.json')
 const client = new Discord.Client()
@@ -19,7 +20,7 @@ client.once('ready', () => {
   pollDatabase.sync()
   rollotronDatabase.sync()
   moneytronDatabase.sync()
-  client.user.setActivity('PM !help pour la doc')
+  client.user.setActivity('!help pour la doc', { type: 'LISTENING' })
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -59,6 +60,10 @@ client.on('message', function (message) {
     message.content === `${prefix}m`
   ) {
     moneytron(message, args, moneytronDatabase, Discord)
+  }
+
+  if (message.content.startsWith(`${prefix}rappel`)) {
+    reminder(message, commandBody)
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']
