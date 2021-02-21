@@ -5,9 +5,9 @@ exports.reminder = async (message, commandBody, database, Discord) => {
   const date = args[1].trim().split(' ')
   const dateArray = []
   dateArray.push(date[0].split('/').reverse().join('-'))
-  dateArray.push(date[1].split('h').join(':'))
+  dateArray.push(date[1].replace('h', ':'))
   const formattedDate = dateArray.join(' ')
-  const text = args[2]
+  const text = args[2].trim()
 
   const eventId = await database.create(
     message,
@@ -15,5 +15,6 @@ exports.reminder = async (message, commandBody, database, Discord) => {
     formattedDate,
     text
   )
+
   message.channel.send(`Rappel créé avec l'id : ${eventId}`)
 }

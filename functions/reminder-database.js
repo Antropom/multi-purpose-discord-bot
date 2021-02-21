@@ -65,4 +65,15 @@ exports.ReminderDatabase = class ReminderDatabase {
       console.error(e)
     }
   }
+
+  getNotReminded = async () => {
+    try {
+      const eventResults = await this.reminder.findAll({
+        where: { hasReminded: false },
+      })
+      return eventResults
+    } catch (e) {
+      console.error(e)
+    }
+  }
 }
