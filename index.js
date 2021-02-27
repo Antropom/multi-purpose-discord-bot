@@ -3,14 +3,15 @@ const { documentation } = require('./functions/documentation')
 const { rollotron } = require('./functions/rollotron')
 const { poll } = require('./functions/poll')
 const { moneytron } = require('./functions/moneytron')
+const { reminder, toRemind } = require('./functions/reminder')
 const { PollDatabase } = require('./functions/poll-database')
 const { RollotronDatabase } = require('./functions/rollotron-database')
 const { MoneytronDatabase } = require('./functions/moneytron-database')
 const { ReminderDatabase } = require('./functions/reminder-database')
-const { reminder } = require('./functions/reminder')
 const { foissSlurs } = require('./functions/foissSlurs')
 const config = require('./config.json')
 const client = new Discord.Client()
+const CronJob = require('cron').CronJob
 
 const prefix = '!'
 let pollDatabase = new PollDatabase()
@@ -32,6 +33,16 @@ client.on('messageReactionAdd', (reaction, user) => {
 client.on('messageReactionRemove', (reaction, user) => {
   pollDatabase.update(reaction, user, 'remove')
 })
+
+const cronReminder = new CronJob(
+  '* * * * * *',
+  () => {
+    toRemind(client.channels.cache, reminderDatabase)
+  },
+  null,
+  true
+)
+cronReminder.start()
 
 client.on('message', function (message) {
   if (message.author.bot) return
@@ -66,7 +77,13 @@ client.on('message', function (message) {
   }
 
   if (message.content.startsWith(`${prefix}rappel`)) {
-    reminder(message, commandBody, reminderDatabase, Discord)
+    reminder(message, commandBody, reminderDatabase).then((res) => {
+      message.channel.send(`Rappel créé avec l'id : ${res}`)
+    })
+  }
+
+  if (message.content.startsWith(`${prefix}arappeler`)) {
+    toRemind(message, reminderDatabase)
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']

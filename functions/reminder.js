@@ -17,14 +17,17 @@ const reminder = async (message, commandBody, database) => {
   ))
 }
 
-const toRemind = async (message, database) => {
+const toRemind = async (channel, database) => {
   const res = await database.getNotReminded()
   const now = Date.now()
   res.forEach((reminder) => {
     const reminderDate = reminder.date.valueOf()
     if (reminderDate < now) {
       const mentionString = '<@!' + reminder.name + '>'
-      message.channel.send(`${mentionString} ${reminder.message}`)
+      channel
+        // À changer, ne pas laisser en dur !!!!!
+        .get('813065114419986452')
+        .send(`${mentionString} ${reminder.message}`)
       database.hasBeenReminded(reminder.id)
     }
   })
