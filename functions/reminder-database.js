@@ -79,4 +79,21 @@ exports.ReminderDatabase = class ReminderDatabase {
       console.error(e)
     }
   }
+
+  hasBeenReminded = async (id) => {
+    try {
+      return await this.reminder.update(
+        {
+          hasReminded: 1,
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      )
+    } catch (e) {
+      console.error(e)
+    }
+  }
 }

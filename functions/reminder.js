@@ -18,7 +18,16 @@ const reminder = async (message, commandBody, database) => {
 }
 
 const toRemind = async (message, database) => {
-  return (res = await database.getNotReminded())
+  const res = await database.getNotReminded()
+  const now = Date.now()
+  res.forEach((reminder) => {
+    const reminderDate = reminder.date.valueOf()
+    if (reminderDate < now) {
+      const mentionString = '<@!' + reminder.name + '>'
+      message.channel.send(`${mentionString} ${reminder.message}`)
+      database.hasBeenReminded(reminder.id)
+    }
+  })
 }
 
 module.exports = {
