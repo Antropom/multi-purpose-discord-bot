@@ -1,4 +1,4 @@
-exports.reminder = async (message, commandBody, database, Discord) => {
+const reminder = async (message, commandBody, database) => {
   const args = commandBody.split(',')
   const mention =
     message.mentions.users.first() || message.mentions.roles.first()
@@ -9,12 +9,19 @@ exports.reminder = async (message, commandBody, database, Discord) => {
   const formattedDate = dateArray.join(' ')
   const text = args[2].trim()
 
-  const eventId = await database.create(
+  return (eventId = await database.create(
     message,
     mention.id,
     formattedDate,
     text
-  )
+  ))
+}
 
-  message.channel.send(`Rappel créé avec l'id : ${eventId}`)
+const toRemind = async (message, database) => {
+  return (res = await database.getNotReminded())
+}
+
+module.exports = {
+  reminder,
+  toRemind,
 }
