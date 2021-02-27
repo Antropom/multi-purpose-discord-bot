@@ -71,7 +71,10 @@ exports.ReminderDatabase = class ReminderDatabase {
       const eventResults = await this.reminder.findAll({
         where: { hasReminded: false },
       })
-      return eventResults
+      return eventResults.reduce((a, b) => {
+        a.push(b.dataValues)
+        return a
+      }, [])
     } catch (e) {
       console.error(e)
     }
