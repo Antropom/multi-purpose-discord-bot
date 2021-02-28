@@ -39,8 +39,7 @@ const cronReminder = new CronJob(
   () => {
     toRemind(client.channels.cache, reminderDatabase)
   },
-  null,
-  true
+  null
 )
 cronReminder.start()
 
@@ -78,12 +77,8 @@ client.on('message', function (message) {
 
   if (message.content.startsWith(`${prefix}rappel`)) {
     reminder(message, commandBody, reminderDatabase).then((res) => {
-      message.channel.send(`Rappel créé avec l'id : ${res}`)
+      message.channel.send(`<@!${res}>, ton rappel a bien été créé.`)
     })
-  }
-
-  if (message.content.startsWith(`${prefix}arappeler`)) {
-    toRemind(message, reminderDatabase)
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']

@@ -42,6 +42,19 @@ exports.ReminderDatabase = class ReminderDatabase {
         allowNull: false,
         defaultValue: 0,
       },
+      channel: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      mentionType: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      isAdmin: {
+        type: Sequelize.BOOLEAN,
+        allowNull: true,
+        defaultValue: 0,
+      },
     })
   }
 
@@ -49,18 +62,21 @@ exports.ReminderDatabase = class ReminderDatabase {
     this.reminder.sync()
   }
 
-  create = async (message, name, date, text) => {
+  create = async (message, mentionDatas, date, text) => {
     const {
       author: { id: authorId },
+      channel: { id: channelId },
     } = message
     try {
       const reminder = await this.reminder.create({
         user: authorId,
-        name: name,
+        name: mentionDatas[0].id,
         date: date,
         message: text,
+        channel: channelId,
+        mentionType: mentionDatas[1],
       })
-      return reminder.id
+      return reminder.user
     } catch (e) {
       console.error(e)
     }
