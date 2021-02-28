@@ -1,5 +1,3 @@
-const { Channel } = require('discord.js')
-
 exports.documentation = (message, Discord) => {
   const doc = new Discord.MessageEmbed()
     .setColor('#0099ff')
@@ -22,6 +20,11 @@ exports.documentation = (message, Discord) => {
         name: 'Les dés',
         value:
           "Afin de lancer un dé, utiliser la commande `!roll`. Si aucun autre paramètre n'est fourni, seul un D6 sera lancé. \n Pour lancer plusieurs dés, rajouter le paramètre `xdy`, où x et y sont des nombres. Exemple: `!roll 2d20` pour lancer 2 D20. Le paramètre `xdy` peut être répété plusieurs fois afin de lancer des dés de valeurs différentes. \n Pour plus d'information utiliser la commande `!roll help`",
+      },
+      {
+        name: 'Les rappels',
+        value:
+          'Afin de demander un rappel, utiliser la commande `!rappel`.\nElle doit être présentée comme telle : `!rappel @mention, jj/mm/YYYY HHhMM, message`.\nExemple : `!rappel @bot, 01/03/2021 12h00, Hello World !`.\nAttention à ne pas oublier les virgules et à bien formater la date.',
       }
     )
 
