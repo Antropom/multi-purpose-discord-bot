@@ -1,20 +1,29 @@
 const reminder = async (message, commandBody, database) => {
   const args = commandBody.split(',')
+
+  if (args.length < 2) {
+    return 'error'
+  }
+
   const mention = []
   mention[0] = message.mentions.users.first() || message.mentions.roles.first()
-  if (message.mentions.users.first()) {
-    mention[1] = 'user'
-  } else if (message.mentions.roles.first()) {
-    mention[1] = 'role'
-  }
+  mention[1] = message.mentions.users.first() ? 'user' : 'role'
+
   const date = args[1].trim().split(' ')
   const dateArray = []
   dateArray.push(date[0].split('/').reverse().join('-'))
   dateArray.push(date[1].replace('h', ':'))
   const formattedDate = dateArray.join(' ')
-  const text = args[2].trim()
 
-  return database.create(message, mention, formattedDate, text)
+  if (
+    new Date(formattedDate) instanceof Date &&
+    !isNaN(new Date(formattedDate).valueOf())
+  ) {
+    const text = args[2] ? args[2].trim() : ''
+    return database.create(message, mention, formattedDate, text)
+  } else {
+    return 'error'
+  }
 }
 
 const toRemind = async (channel, database) => {

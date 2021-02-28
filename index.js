@@ -77,7 +77,11 @@ client.on('message', function (message) {
 
   if (message.content.startsWith(`${prefix}rappel`)) {
     reminder(message, commandBody, reminderDatabase).then((res) => {
-      message.channel.send(`<@!${res}>, ton rappel a bien été créé.`)
+      res !== 'error'
+        ? message.channel.send(`<@!${res}>, ton rappel a bien été créé.`)
+        : message.channel.send(
+            'Ta requête est mal formulée. Envoie-moi `!help` pour voir les instructions.'
+          )
     })
   }
 

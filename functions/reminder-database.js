@@ -1,4 +1,3 @@
-const Discord = require('discord.js')
 const Sequelize = require('sequelize')
 const config = require('../config.json')
 
@@ -79,6 +78,7 @@ exports.ReminderDatabase = class ReminderDatabase {
       return reminder.user
     } catch (e) {
       console.error(e)
+      message.channel.send("Attention, la saisie n'est pas correcte.")
     }
   }
 
