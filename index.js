@@ -78,11 +78,11 @@ client.on('message', function (message) {
   if (message.content.startsWith(`${prefix}rappel`)) {
     reminder(message, commandBody, reminderDatabase).then((res) => {
       res !== 'error'
-        ? message.channel.send(`<@!${res}>, ton rappel a bien été créé.`)
-        : message.channel.send(
+        ? message.author.send(res)
+        : message.author.send(
             'Ta requête est mal formulée. Envoie-moi `!help` pour voir les instructions.'
           )
-    })
+    }).then(() => message.delete())
   }
 
   const foissNames = ['foiss', 'pierre', 'foissac']

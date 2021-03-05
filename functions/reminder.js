@@ -20,7 +20,8 @@ const reminder = async (message, commandBody, database) => {
     !isNaN(new Date(formattedDate).valueOf())
   ) {
     const text = args[2] ? args[2].trim() : ''
-    return database.create(message, mention, formattedDate, text)
+    const res = await database.create(message, mention, formattedDate, text)
+    return `Ton rappel pour "${res.message}" le ${date[0]} à ${date[1]}, a bien été créé.`
   } else {
     return 'error'
   }

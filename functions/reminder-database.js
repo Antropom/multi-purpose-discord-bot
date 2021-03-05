@@ -75,7 +75,7 @@ exports.ReminderDatabase = class ReminderDatabase {
         channel: channelId,
         mentionType: mentionDatas[1],
       })
-      return reminder.user
+      return reminder
     } catch (e) {
       console.error(e)
       message.channel.send("Attention, la saisie n'est pas correcte.")
