@@ -85,7 +85,7 @@ client.on('message', function (message) {
     }).then(() => message.delete())
   }
 
-  const foissNames = ['foiss', 'pierre', 'foissac']
+  const foissNames = ['foiss', 'pierre', 'foissac', liverbag]
   if (foissNames.some((name) => message.content.toLowerCase().includes(name))) {
     foissSlurs(message)
   }
